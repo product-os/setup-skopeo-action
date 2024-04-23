@@ -1,0 +1,14 @@
+- commits:
+    - subject: Fix errors found in testing
+      hash: 5d16eed93a4b8ead0581624493dbbc5943e79da3
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 0.0.2
+  title: ""
+  date: 2024-04-23T13:57:48.173Z
