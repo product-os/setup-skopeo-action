@@ -1,0 +1,84 @@
+name: "Setup Skopeo Action"
+description: "Setup skopeo in a GitHub Actions workflow"
+branding:
+  icon: "code"
+  color: "blue"
+inputs:
+  version:
+    description: "Skopeo release to install (see https://github.com/lework/skopeo-binary/releases)"
+    required: false
+    default: latest
+  skip-cache:
+    description: "Skip using the tool cache and always re-download"
+    required: false
+
+# Builds and then runs as separate steps as default GitHub method does not allow passing build args
+runs:
+  using: "composite"
+  steps:
+    - name: Get latest release
+      if: inputs.version == 'latest' || inputs.version == ''
+      id: latest
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      env:
+        REPO: lework/skopeo-binary
+      run: |
+        release="$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | jq -r '.tag_name')"
+        echo "release=${release}" >> "${GITHUB_OUTPUT}"
+
+    - name: Restore tool cache
+      if: inputs.skip-cache != 'true'
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.tool_cache }}/skopeo
+        key: skopeo-${{ runner.os }}-${{ runner.arch }}-${{ steps.latest.outputs.release || inputs.version }}
+
+    - name: Get runner os
+      if: steps.cache.outputs.cache-hit != true
+      id: os
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: |
+        case "${{ runner.os }}" in
+          Linux) echo "target=linux" >> "${GITHUB_OUTPUT}" ;;
+          macOS) echo "target=darwin" >> "${GITHUB_OUTPUT}" ;;
+          *) echo "::error::Unsupported os: ${{ runner.os }}" ; exit 1 ;;
+        esac
+
+    - name: Get runner arch
+      if: steps.cache.outputs.cache-hit != true
+      id: arch
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: |
+        case "${{ runner.arch }}" in
+          X64) echo "target=amd64" >> "${GITHUB_OUTPUT}" ;;
+          ARM64) echo "target=arm64" >> "${GITHUB_OUTPUT}" ;;
+          *) echo "::error::Unsupported arch: ${{ runner.arch }}" ; exit 1 ;;
+        esac
+
+    - name: Download skopeo
+      if: steps.cache.outputs.cache-hit != true
+      working-directory: ${{ runner.temp }}/skopeo
+      shell: bash --noprofile --norc -eo pipefail -x {0}
+      env:
+        REPO: lework/skopeo-binary
+        VERSION: ${{ steps.latest.outputs.release || inputs.cli-version }}
+        OS: ${{ steps.os.outputs.target }}
+        ARCH: ${{ steps.arch.outputs.target }}
+      run: |
+        curl -fsSL "https://github.com/${REPO}/releases/download/${VERSION}/skopeo-${OS}-${ARCH}" -o skopeo
+        chmod +x skopeo
+
+    - name: Update tool cache
+      uses: AnimMouse/tool-cache@v1
+      with:
+        folder_name: skopeo
+        cache_hit: ${{ steps.cache.outputs.cache-hit }}
+
+    - name: Print skopeo version
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: skopeo version

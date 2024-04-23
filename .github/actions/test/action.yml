@@ -1,0 +1,10 @@
+name: "Test setup of skopeo"
+description: "Test setup of skopeo composite action"
+runs:
+  using: "composite"
+  steps:
+    - name: Test setup of skopeo
+      uses: ./
+    - name: Print skopeo version
+      shell: bash
+      run: skopeo version
