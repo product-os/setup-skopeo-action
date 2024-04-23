@@ -7,4 +7,4 @@ runs:
       uses: ./
     - name: Print skopeo version
       shell: bash
-      run: skopeo version
+      run: skopeo --version
