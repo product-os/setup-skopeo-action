@@ -26,5 +26,5 @@ jobs:
     with:
       custom_test_matrix: >
         {
-          os: ["ubuntu-latest", "macos-latest", "ARM64"]
+          os: ["ubuntu-latest", "macos-latest", ["self-hosted", "ARM64"]]
         }
