@@ -30,7 +30,7 @@ runs:
     - name: Restore tool cache
       if: inputs.skip-cache != 'true'
       id: cache
-      uses: actions/cache@3624ceb22c1c5a301c8db4169662070a689d9ea8 # v4
+      uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
       with:
         path: ${{ runner.tool_cache }}/skopeo
         key: skopeo-${{ runner.os }}-${{ runner.arch }}-${{ steps.latest.outputs.release || inputs.version }}
